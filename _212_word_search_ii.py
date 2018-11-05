@@ -3,13 +3,13 @@ from collections import defaultdict
 
 class Trie:
 
-    def __init__(self, word=None):
+    def __init__(self):
         """
         Initialize your data structure here.
         """
+        self.freq = 0
         self.word = None
-        self.count = 0
-        self.D = defaultdict(Trie)
+        self.trie = {}
 
     def insert(self, word):
         """
@@ -19,10 +19,11 @@ class Trie:
         """
         root = self
         for ch in word:
-            root = root.D[ch]
-
+            if ch not in root.trie:
+                root.trie[ch] = Trie()
+            root = root.trie[ch]
         root.word = word
-        root.count += 1
+        root.freq += 1
 
     def search(self, word):
         """
@@ -33,7 +34,7 @@ class Trie:
         try:
             root = self
             for ch in word:
-                root = root.D[ch]
+                root = root.trie[ch]
         except KeyError as e:
             return False
 
@@ -48,17 +49,17 @@ class Trie:
         try:
             root = self
             for ch in prefix:
-                root = root.D[ch]
+                root = root.trie[ch]
         except KeyError as e:
             return False
 
         return True
 
     def consume(self, w):
-        return self.D[w]
+        return self.trie[w]
 
     def has(self, ch):
-        return ch in self.D
+        return ch in self.trie
 
 
 class Solution:
@@ -71,18 +72,19 @@ class Solution:
         for w in words:
             self.T.insert(w)
 
-    def dfs(self, board, i, j, visited, trieRoot):
+    def dfs(self, board, i, j, visited, trie):
 
-        if trieRoot.has(board[i][j]):
-            trieRoot_ = trieRoot.consume(board[i][j])
-            if trieRoot_.word is not None:
-                self.Accumulator.add(trieRoot_.word)
+        visited.add((i, j))
+        if trie.has(board[i][j]):
+            trie_ = trie.consume(board[i][j])
+            if trie_.word is not None:
+                self.Accumulator.add(trie_.word)
             for di, dj in [[0, 1], [0, -1], [1, 0], [-1, 0]]:
                 i_, j_ = di+i, dj+j
                 if 0 <= i_ < len(board) and 0 <= j_ < len(board[0]):
                     if not (i_, j_) in visited:
-                        visited.add((i_, j_))
-                        self.dfs(board, i_, j_, visited, trieRoot_)
+                        self.dfs(board, i_, j_, visited, trie_)
+        visited.remove((i, j))
 
     def findWords(self, board, words):
         """
@@ -105,15 +107,21 @@ board = [
   ['i','f','l','v']
 ]
 
-words = ["aaa"]
-board = [
-    ["a", "a"]
-]
+# words = ["aaa"]
+# board = [
+#     ["a", "a"]
+# ]
 
-words = ["a"]
-board = [
-    ["a"]
-]
+# words = ["a"]
+# board = [
+#     ["a"]
+# ]
+
+# words = ["acdb"]
+# board = [
+#     ["a","b"],
+#     ["c","d"]
+# ]
 
 s = Solution()
 print(s.findWords(board, words))
